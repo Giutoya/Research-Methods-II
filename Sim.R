@@ -1,10 +1,10 @@
-#SIM Model, R version 1
+#SIM Model, Model A
 
 #This code replicates results in the book Monetary Economics:
 #An Integrated Approach to Credit, Money, Income, Production and Wealth,
 #by Wynne Godley and Marc Lavoie, chapter 3, figures 3.2 and 3.3.
 
-#Created by Mrco Veronese Passarella on 2 October 2018, Modified By GTY for EVEAAL 2025
+#Created by Marco Veronese Passarella on 2 October 2018, Modified By GTY for ECON 530 2026
 
 #Clear
 rm(list=ls(all=TRUE))
@@ -20,7 +20,7 @@ alpha1=0.6
 alpha2=0.4
 theta=0.2
 w=1
-#g_d=20
+#g_d=0
 #VARIABLES
 #Income
 y=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
@@ -29,7 +29,7 @@ c_s=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
 #Consumption supply
 c_d=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
 #Government expenditures demand
-g_d=matrix(data=20,nrow=nScenarios,ncol=nPeriods) 
+g_d=matrix(data=0,nrow=nScenarios,ncol=nPeriods) 
 #Government expenditures supply
 g_s=matrix(data=0,nrow=nScenarios,ncol=nPeriods) 
 #Taxes demanded
@@ -60,7 +60,7 @@ for (j in 1:nScenarios){
      
      #Define alternative scenarios
      if (i>=15 && j==2){
-       g_d[2,i]=25   #Government expenditures passed from 20 to 25 after 15 periods
+       g_d[2,i]=20   #Government expenditures passed from 20 to 25 after 15 periods
      }    
     
     
@@ -96,25 +96,35 @@ for (j in 1:nScenarios){
    }
  }
 }
+
+x=c("1958":"2001")
+
 #Figure 3.1
-plot(y[1,2:100],type="l",col="4",lwd=2,lty=1,font.main=1,cex.main=0.75,main="Figure 3.1: Impact of Y and Y* of a permanent increase in G",ylab = '',xlab = '',ylim=range(0,130))
-lines(y[2,2:100],type="l",lwd=2,lty=1,col="3")
+plot(g_d[2,12:55]/theta,xaxt='n',type="l",col="4",lwd=2,lty=1,font.main=1,cex.main=0.75,main="Figure 3.1: Impact of Y and Y* of a permanent increase in G",ylab = NA,xlab = NA,ylim=range(0,130))
+lines(y[2,12:55],type="l",lwd=2,lty=1,col="3",ylab = NA,xlab = NA)
 legend("topleft",c("Steady state solution Y*","Income Y"),  bty = 1, cex = 0.8, lty=c(1,1), lwd=c(2,2), col = c(4,3), box.lwd=0)
+axis(side=1,at=1:44,labels=x,tck=-0.07)
+
 
 #Figure 3.2
-plot(yd[2,2:100],type="l",col="2",lwd=2,lty=1,font.main=1,cex.main=0.75,main="Figure 3.2: YD and C starting from scratch",ylab = '',xlab = '',ylim=range(0,130))
-lines(c_d[2,2:100],type="l",lwd=2,lty=1,col="3")
+plot(yd[2,12:55],xaxt='n',type="l",col="2",lwd=2,lty=1,font.main=1,cex.main=0.75,main="Figure 3.2: YD and C starting from scratch",ylab = '',xlab = '',ylim=range(0,130))
+lines(c_d[2,12:55],type="l",lwd=2,lty=1,col="3")
 #abline(h=80,col=1,lty=1,lwd=1)
 segments(x0=-3, # Value from x (initial)
-         x1=100, # Value to x (final)
-         y0=100, # Value from y (initial)
-         y1=100, # Value to y (final)
+         x1=80, # Value to x (final)
+         y0=80, # Value from y (initial)
+         y1=80, # Value to y (final)
          col=1,lty=2,lwd=1)
 legend("topleft",c("Income YD","Consumption C"),  bty = 1, cex = 0.8, lty=c(1,1), lwd=c(2,2), col = c(2,3), box.lwd=0)
+axis(side=1,at=1:44,labels=x,tck=-0.07)
 
 #Figure 3.3
-plot(h_h[2,2:100],type="l",lwd=2,lty=1,col="4",font.main=1,cex.main=0.75,main="Figure 3.3: Wealth level and wealth change, starting from scratch",ylab = '',xlab = '')
-par(new="TRUE")
-plot(diff(h_h[2,2:100]),type="l",lwd=2,lty=1,col="2",xlab = '',ylab = '',xaxt='n',yaxt='n')
+plot(h_h[2,12:55],xaxt='n',yaxt='n',type="l",lwd=2,lty=1,col="4",font.main=1,cex.main=0.75,main="Figure 3.3: Wealth level and wealth change, starting from scratch",ylab = '',xlab = '')
 axis(side=4)
+par(new="TRUE")
+plot(diff(h_h[2,12:55]),type="l",lwd=2,lty=1,col="2",xlab = '',ylab = '',xaxt='n',yaxt='n')
+axis(side=2)
 legend("topleft",c("Wealth level H (money stock)","Household saving (the change in H)"),  bty = 1, cex = 0.8, lty=c(1,1), lwd=c(2,2), col = c(4,2), box.lwd=0)
+axis(side=1,at=1:44,labels=x,tck=-0.07)
+
+

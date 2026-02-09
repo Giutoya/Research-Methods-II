@@ -1,4 +1,4 @@
-#SIM Model, Model A
+#SIM Model, Model B
 
 #This code replicates results in the book Monetary Economics:
 #An Integrated Approach to Credit, Money, Income, Production and Wealth,
@@ -126,5 +126,6 @@ plot(diff(h_h[2,12:55]),type="l",lwd=2,lty=1,col="2",xlab = '',ylab = '',xaxt='n
 axis(side=2)
 legend("topleft",c("Wealth level H (money stock)","Household saving (the change in H)"),  bty = 1, cex = 0.8, lty=c(1,1), lwd=c(2,2), col = c(4,2), box.lwd=0)
 axis(side=1,at=1:44,labels=x,tck=-0.07)
+
 
 

@@ -448,3 +448,96 @@ legend("topright", legend=c("Private NAFA", "Current Account (CA)", "Government 
 
 # Reset graphics layout
 par(mfrow=c(1,1))
+
+# =====================================================================
+# STEADY-STATE CONDITIONS CHECK (NAFA = 0) - BASELINE SCENARIO (_0)
+# =====================================================================
+
+# 1. Extract Baseline Scenario (Row 1) variables directly from the matrices
+g_0 <- g[1, ]
+r_0 <- r[1, ]
+r_f_0 <- r_f[1, ]
+b_p_0 <- b_p[1, ]
+b_w_0 <- b_w[1, ]
+bw_p_0 <- bw_p[1, ]
+xr_0 <- xr[1, ]
+y_f_0 <- y_f[1, ]
+v_0 <- v[1, ]
+netfa_0 <- netfa[1, ]
+eps0_0 <- eps0[1, ]
+lambda10_0 <- lambda10[1, ]
+lambda20_0 <- lambda20[1, ]
+y_0 <- y[1, ]
+ca_0 <- ca[1, ]
+psbr_0 <- psbr[1, ]
+
+# 2. Compute the steady-state analytical conditions using base R vector arithmetic
+# Steady-state output derived from the Fiscal Stance (PSBR = 0)
+y_star_fiscal <- (g_0 + r_0*(b_p_0 + b_w_0))/theta - r_0*b_p_0 - r_f_0*bw_p_0*xr_0
+
+# Steady-state output derived from the Export Performance Ratio (CA = 0)
+y_star_trade <- ((exp(eps0_0 + eps1*log(xr_0) + eps2*log(y_f_0)) + r_f_0*bw_p_0*xr_0 - r_0*b_w_0) / 
+                   (exp(mu0) * xr_0^(-mu1))) ^ (1/mu2)
+
+# Steady-state output derived from structural portfolio parameters
+lambda_p <- lambda10_0 + lambda11*r_0 - lambda12*r_f_0
+lambda_w <- lambda20_0 - lambda21*r_0 + lambda22*r_f_0
+y_star_exog <- g_0/theta + v_0 * ((r_0*(lambda_p + lambda_w))/theta - r_0*lambda_p - r_f_0*lambda_w) - (r_0*netfa_0)/theta
+
+# Phase Diagram Scaling Variables (% of GDP)
+ca_pct <- (ca_0 / y_0) * 100
+pub_budget_pct <- (-psbr_0 / y_0) * 100
+nafa_zero_line <- ca_pct # 45-degree boundary line (Y = X)
+
+time_axis <- 1:nPeriods
+
+# ---------------------------------------------------------------------
+# Plot 1: Steady-State Convergence (Output) 
+# ---------------------------------------------------------------------
+plot(time_axis, y_0, type="l", col="black", lty=1, lwd=2,
+     main="Steady-State Output Conditions (NAFA=0)",
+     xlab="Periods", ylab="Output",
+     ylim=c(93, max(c(y_0, y_star_fiscal, y_star_trade, y_star_exog), na.rm=TRUE)))
+
+lines(time_axis, y_star_fiscal, col="blue", lty=2, lwd=2)
+lines(time_axis, y_star_trade, col="red", lty=3, lwd=2)
+lines(time_axis, y_star_exog, col="green", lty=4, lwd=2)
+
+legend("bottomright", 
+       legend=c("Actual GDP (y_0)", "SS from Fiscal Stance", 
+                "SS from Trade Balance", "SS from Structural Params"),
+       col=c("black", "blue", "red", "green"), 
+       lty=c(1, 2, 3, 4), lwd=2, bty="n", cex=0.8)
+
+# ---------------------------------------------------------------------
+# Plot 2: XY Phase Diagram (CA vs Public Budget Scaled as % of GDP)
+# ---------------------------------------------------------------------
+# Calculate dynamic text coordinates for NAFA zones
+text_x_pos_min <- min(ca_pct, na.rm = TRUE) * 0.5
+text_y_pos_min <- min(pub_budget_pct, na.rm = TRUE) #* 0.5
+text_x_pos_max <- text_x_pos_min#max(ca_pct, na.rm = TRUE) * #-0.5
+text_y_pos_max <- max(pub_budget_pct, na.rm = TRUE) #* 0.75
+
+# Initialize plot with trajectory path and circles
+plot(ca_pct, pub_budget_pct, type="b", pch=1, col="blue", lwd=1.5,
+     main="8A: Phase Diagram (CA vs Public Budget as % of GDP)",
+     xlab="Current Account Balance (% of GDP)",
+     ylab="Public Budget Balance (% of GDP)",
+     xlim=range(c(ca_pct, -max(abs(ca_pct))), na.rm=TRUE),
+     ylim=range(c(pub_budget_pct, nafa_zero_line, -max(abs(pub_budget_pct))), na.rm=TRUE))
+
+# Add 0-lines for X and Y axes
+abline(h=0, col="black", lwd=1)
+abline(v=0, col="black", lwd=1)
+
+# Add 45-degree NAFA=0 Boundary line (Y = X)
+lines(ca_pct, nafa_zero_line, col="black", lty=2, lwd=2)
+
+# Floating text annotations for NAFA areas
+text(x = text_x_pos_max, y = text_y_pos_max, labels = "NAFA < 0 Area", font = 3)
+text(x = text_x_pos_min, y = text_y_pos_min, labels = "NAFA > 0 Area", font = 3)
+
+legend("bottomright", 
+       legend=c("Economy Trajectory", "NAFA = 0 Boundary"),
+       col=c("blue", "black"), 
+       lty=c(1, 2), pch=c(1, NA), lwd=1.5, bty="n", cex=0.8)

@@ -246,10 +246,10 @@ for (j in 1:nScenarios){
 }
 
 #FIGURES
-#Figure 6.8 (years 1945 to 2010: i= 1 to 66)
-x=c("1945":"2010")
-plot(y_n[2,1:66],xaxt='n',type="l",col="4",lwd=2,lty=1,font.main=1,cex.main=0.75,main="Figure 6.8: Evolution of GDP in the N and S Country following an increase in the import propensity of the S Country",ylab = '',xlab = '',ylim=range(y_n[2,1:66],y_s[2,1:66]))
-lines(y_s[2,1:66],type="l",lwd=2,lty=2,col="2")
+#Figure 6.8 (years 1945 to 2010: i= 1 to 66) modified to 1946 as y_i are 0 in baseline
+x=c("1946":"2010")
+plot(y_n[2,2:66],xaxt='n',type="l",col="4",lwd=2,lty=1,font.main=1,cex.main=0.75,main="Figure 6.8: Evolution of GDP in the N and S Country following an increase in the import propensity of the S Country",ylab = '',xlab = '',ylim=range(y_n[2,2:66],y_s[2,2:66]))
+lines(y_s[2,2:66],type="l",lwd=2,lty=2,col="2")
 legend("right",c("North Country GDP","South Country GDP"),  bty = 1, cex = 0.8, lty=c(1,2), lwd=c(2,2), col = c(4,2), box.lwd=0)
 axis(side=1,at=seq(1,66,by=5),labels=x[seq(1,66,by=5)],tck=-0.02)
 

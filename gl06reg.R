@@ -3,7 +3,28 @@
 #This code replicates results in the book Monetary Economics:
 #An Integrated Approach to Credit, Money, Income, Production and Wealth,
 #by Wynne Godley and Marc Lavoie, chapter 6, figures 6.1 to 6.7.
-#It is an R translation of the EViews program gl06reg.prg, restructured in the style of Sim_a.R
+#It is an R translation of the EViews program gl06reg.prg, restructured in the style of Sim_a.R.
+#The equations follow the EViews program, in the same order and with the same equation numbers.
+
+#Based on the EViews program gl06reg.prg (MODEL REG, Chapter 6 of Godley and Lavoie, Monetary Economics)
+#Copyright (c) 2006 Gennaro Zezza
+#Permission is hereby granted, free of charge, to any person obtaining a
+#copy of this software and associated documentation files (the "Software"),
+#to deal in the Software without restriction, including without limitation
+#the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#and/or sell copies of the Software, and to permit persons to whom the
+#Software is furnished to do so, subject to the following conditions:
+#
+#The above copyright notice and this permission notice shall be included in
+#all copies or substantial portions of the Software.
+#
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+#IN THE SOFTWARE.
 
 #Clear
 rm(list=ls(all=TRUE))
@@ -50,6 +71,9 @@ bcb0=43.244    #Bills held by the central bank
 mu_s=matrix(data=0.18781,nrow=nScenarios,ncol=nPeriods)
 #Import propensity of region N
 mu_n=matrix(data=0.18781,nrow=nScenarios,ncol=nPeriods)
+#Overall government expenditure and overall tax payments
+g=matrix(data=2*20,nrow=nScenarios,ncol=nPeriods)
+t=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
 #Government expenditure of region S (exogenous: changes in scenario 3)
 g_s=matrix(data=20,nrow=nScenarios,ncol=nPeriods)
 #Propensity to consume out of income of region S (exogenous: changes in scenario 4)
@@ -131,66 +155,65 @@ for (j in 1:nScenarios){
      }
 
 
-     # REG model in R
+     # REG model in R (equation numbers as in the EViews program)
 
-     # Region N
-     # GDP
+     # Determination of national income in Region N - eq. 6.1
      y_n[j,i]     = cons_n[j,i] + g_n + x_n[j,i] - im_n[j,i]
-     # Imports
-     im_n[j,i]    = mu_n[j,i] * y_n[j,i]
-     # Exports of N are the imports of S
-     x_n[j,i]     = im_s[j,i]
-     # Disposable income
-     yd_n[j,i]    = y_n[j,i] - t_n[j,i] + r[j,i-1] * b_h_n[j,i-1]
-     # Taxes
-     t_n[j,i]     = theta * (y_n[j,i] + r[j,i-1] * b_h_n[j,i-1])
-     # Households' wealth
-     v_n[j,i]     = v_n[j,i-1] + yd_n[j,i] - cons_n[j,i]
-     # Consumption function
-     cons_n[j,i]  = alpha1_n * yd_n[j,i] + alpha2_n * v_n[j,i-1]
-     # Cash held by the households
-     h_h_n[j,i]   = v_n[j,i] - b_h_n[j,i]
-     # Demand for bills
-     b_h_n[j,i]   = v_n[j,i] * (lambda0_n + lambda1_n * r[j,i] - lambda2_n * (yd_n[j,i] / v_n[j,i]))
-
-     # Region S
-     # GDP
+     # Determination of national income in Region S - eq. 6.2
      y_s[j,i]     = cons_s[j,i] + g_s[j,i] + x_s[j,i] - im_s[j,i]
-     # Imports
+     # Imports in Region N - eq. 6.3
+     im_n[j,i]    = mu_n[j,i] * y_n[j,i]
+     # Imports in Region S - eq. 6.4
      im_s[j,i]    = mu_s[j,i] * y_s[j,i]
-     # Exports of S are the imports of N
+     # Exports of Region N - eq. 6.5
+     x_n[j,i]     = im_s[j,i]
+     # Exports of Region S - eq. 6.6
      x_s[j,i]     = im_n[j,i]
-     # Disposable income
+     # Disposable income in Region N - eq. 6.7
+     yd_n[j,i]    = y_n[j,i] - t_n[j,i] + r[j,i-1] * b_h_n[j,i-1]
+     # Disposable income in Region S - eq. 6.8
      yd_s[j,i]    = y_s[j,i] - t_s[j,i] + r[j,i-1] * b_h_s[j,i-1]
-     # Taxes
+     # Tax payments in Region N - eq. 6.9
+     t_n[j,i]     = theta * (y_n[j,i] + r[j,i-1] * b_h_n[j,i-1])
+     # Tax payments in Region S - eq. 6.10
      t_s[j,i]     = theta * (y_s[j,i] + r[j,i-1] * b_h_s[j,i-1])
-     # Households' wealth
-     v_s[j,i]     = v_s[j,i-1] + yd_s[j,i] - cons_s[j,i]
-     # Consumption function
+     # Wealth accumulation in Region N - eq. 6.11
+     v_n[j,i]     = v_n[j,i-1] + (yd_n[j,i] - cons_n[j,i])
+     # Wealth accumulation in Region S - eq. 6.12
+     v_s[j,i]     = v_s[j,i-1] + (yd_s[j,i] - cons_s[j,i])
+     # Consumption function in Region N - eq. 6.13
+     cons_n[j,i]  = alpha1_n * yd_n[j,i] + alpha2_n * v_n[j,i-1]
+     # Consumption function in Region S - eq. 6.14
      cons_s[j,i]  = alpha1_s[j,i] * yd_s[j,i] + alpha2_s * v_s[j,i-1]
-     # Cash held by the households
+     # Cash money held in Region N - eq. 6.15
+     h_h_n[j,i]   = v_n[j,i] - b_h_n[j,i]
+     # Cash money held in Region S - eq. 6.16
      h_h_s[j,i]   = v_s[j,i] - b_h_s[j,i]
-     # Demand for bills
+     # Demand for government bills in Region N - eq. 6.17
+     b_h_n[j,i]   = v_n[j,i] * (lambda0_n + lambda1_n * r[j,i] - lambda2_n * (yd_n[j,i] / v_n[j,i]))
+     # Demand for government bills in Region S - eq. 6.18
      b_h_s[j,i]   = v_s[j,i] * (lambda0_s[j,i] + lambda1_s * r[j,i] - lambda2_s * (yd_s[j,i] / v_s[j,i]))
-
-     # Government and central bank (common to both regions)
-     # Bills held by the households of both regions
+     # Overall tax payments - eq. 6.19
+     t[j,i]       = t_n[j,i] + t_s[j,i]
+     # Overall government expenditure - eq. 6.20
+     g[j,i]       = g_n + g_s[j,i]
+     # Total bills outstanding - eq. 6.21
      b_h[j,i]     = b_h_n[j,i] + b_h_s[j,i]
-     # Cash held by the households of both regions
+     # Total cash outstanding - eq. 6.22
      h_h[j,i]     = h_h_n[j,i] + h_h_s[j,i]
-     # Supply of bills (government budget constraint, central bank profits go to the government)
-     b_s[j,i]     = b_s[j,i-1] + g_n + g_s[j,i] + r[j,i-1] * b_s[j,i-1] - t_n[j,i] - t_s[j,i] - r[j,i-1] * b_cb[j,i-1]
-     # Bills held by the central bank
-     b_cb[j,i]    = b_s[j,i] - b_h[j,i]
-     # Supply of cash
+     # Supply of government bills - eq. 6.23
+     b_s[j,i]     = b_s[j,i-1] + (g[j,i] + r[j,i-1] * b_s[j,i-1]) - (t[j,i] + r[j,i-1] * b_cb[j,i-1])
+     # Supply of cash - eq. 6.24
      h_s[j,i]     = h_s[j,i-1] + b_cb[j,i] - b_cb[j,i-1]
-     # Interest rate set by the central bank
+     # Government bills held by the central bank - eq. 6.25
+     b_cb[j,i]    = b_s[j,i] - b_h[j,i]
+     # Interest rate as policy instrument - eq. 6.26
      r[j,i]       = r_bar
 
      # Variables used in the figures (S Region)
      dv_s[j,i]    = v_s[j,i] - v_s[j,i-1]
      tb_s[j,i]    = x_s[j,i] - im_s[j,i]
-     gb_s[j,i]    = t_s[j,i] - g_s[j,i] - r[j,i-1] * b_h_s[j,i-1]
+     gb_s[j,i]    = t_s[j,i] - (g_s[j,i] + r[j,i] * b_h_s[j,i-1])
      check[j,i]   = h_h[j,i] - h_s[j,i]
 
    }

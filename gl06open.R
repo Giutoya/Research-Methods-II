@@ -4,7 +4,28 @@
 #This code replicates results in the book Monetary Economics:
 #An Integrated Approach to Credit, Money, Income, Production and Wealth,
 #by Wynne Godley and Marc Lavoie, chapter 6, figures 6.8 to 6.11.
-#It is an R translation of the EViews program gl06open.prg, restructured in the style of Sim_a.R
+#It is an R translation of the EViews program gl06open.prg, restructured in the style of Sim_a.R.
+#The equations follow the EViews program, in the same order and with the same equation numbers.
+
+#Based on the EViews program gl06open.prg (MODEL OPEN, Chapter 6 of Godley and Lavoie, Monetary Economics)
+#Copyright (c) 2006 Gennaro Zezza
+#Permission is hereby granted, free of charge, to any person obtaining a
+#copy of this software and associated documentation files (the "Software"),
+#to deal in the Software without restriction, including without limitation
+#the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#and/or sell copies of the Software, and to permit persons to whom the
+#Software is furnished to do so, subject to the following conditions:
+#
+#The above copyright notice and this permission notice shall be included in
+#all copies or substantial portions of the Software.
+#
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+#IN THE SOFTWARE.
 
 #Clear
 rm(list=ls(all=TRUE))
@@ -117,11 +138,11 @@ tb_s=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
 gb_s=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
 #Change in the stock of bills held by the central bank
 d_bcb_s=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
-#Change in the stock of money
+#Change in the stock of money (cash held by the households)
 d_hs_s=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
 #Value of the change in gold reserves
 d_or_s=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
-#Redundant equations: cash demand minus cash supply (should be zero)
+#Redundant equations: change in the value of gold minus the trade balance (should be zero, up to the rounding of the starting values)
 check_n=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
 check_s=matrix(data=0,nrow=nScenarios,ncol=nPeriods)
 
@@ -145,84 +166,80 @@ for (j in 1:nScenarios){
      }
 
 
-     # OPEN model in R
+     # OPEN model in R (equation numbers as in the EViews program)
 
-     # Country N
-     # GDP
+     # Determination of national income in Country N - eq. 6.O.1
      y_n[j,i]     = cons_n[j,i] + g_n + x_n[j,i] - im_n[j,i]
-     # Imports
-     im_n[j,i]    = mu_n[j,i] * y_n[j,i]
-     # Exports of N are the imports of S, expressed in the currency of N
-     x_n[j,i]     = im_s[j,i] / xr[j,i]
-     # Disposable income
-     yd_n[j,i]    = y_n[j,i] - t_n[j,i] + r_n[j,i-1] * b_h_n[j,i-1]
-     # Taxes
-     t_n[j,i]     = theta_n * (y_n[j,i] + r_n[j,i-1] * b_h_n[j,i-1])
-     # Households' wealth
-     v_n[j,i]     = v_n[j,i-1] + yd_n[j,i] - cons_n[j,i]
-     # Consumption function
-     cons_n[j,i]  = alpha1_n * yd_n[j,i] + alpha2_n * v_n[j,i-1]
-     # Cash held by the households
-     h_h_n[j,i]   = v_n[j,i] - b_h_n[j,i]
-     # Demand for bills
-     b_h_n[j,i]   = v_n[j,i] * (lambda0_n + lambda1_n * r_n[j,i] - lambda2_n * (yd_n[j,i] / v_n[j,i]))
-     # Supply of bills (government budget constraint, central bank profits go to the government)
-     b_s_n[j,i]   = b_s_n[j,i-1] + g_n + r_n[j,i-1] * b_s_n[j,i-1] - t_n[j,i] - r_n[j,i-1] * b_cb_n[j,i-1]
-     # Bills held by the central bank
-     b_cb_n[j,i]  = b_s_n[j,i] - b_h_n[j,i]
-     # Supply of cash (bills and gold held by the central bank)
-     h_s_n[j,i]   = h_s_n[j,i-1] + b_cb_n[j,i] - b_cb_n[j,i-1] + p_g_n[j,i] * (or_n[j,i] - or_n[j,i-1])
-     # Gold reserves (trade balance settled in gold)
-     or_n[j,i]    = or_n[j,i-1] + (x_n[j,i] - im_n[j,i]) / p_g_n[j,i]
-     # Price of gold
-     p_g_n[j,i]   = p_g_bar
-     # Interest rate set by the central bank
-     r_n[j,i]     = r_bar_n
-
-     # Country S
-     # GDP
+     # Determination of national income in Country S - eq. 6.O.2
      y_s[j,i]     = cons_s[j,i] + g_s + x_s[j,i] - im_s[j,i]
-     # Imports
+     # Imports in Country N - eq. 6.O.3
+     im_n[j,i]    = mu_n[j,i] * y_n[j,i]
+     # Imports in Country S - eq. 6.O.4
      im_s[j,i]    = mu_s[j,i] * y_s[j,i]
-     # Exports of S are the imports of N, expressed in the currency of S
+     # Exports of Country N - eq. 6.O.5
+     x_n[j,i]     = im_s[j,i] / xr[j,i]
+     # Exports of Country S - eq. 6.O.6
      x_s[j,i]     = im_n[j,i] * xr[j,i]
-     # Disposable income
+     # Disposable income in Country N - eq. 6.O.7
+     yd_n[j,i]    = y_n[j,i] - t_n[j,i] + r_n[j,i-1] * b_h_n[j,i-1]
+     # Disposable income in Country S - eq. 6.O.8
      yd_s[j,i]    = y_s[j,i] - t_s[j,i] + r_s[j,i-1] * b_h_s[j,i-1]
-     # Taxes
+     # Tax payments in Country N - eq. 6.O.9
+     t_n[j,i]     = theta_n * (y_n[j,i] + r_n[j,i-1] * b_h_n[j,i-1])
+     # Tax payments in Country S - eq. 6.O.10
      t_s[j,i]     = theta_s * (y_s[j,i] + r_s[j,i-1] * b_h_s[j,i-1])
-     # Households' wealth
-     v_s[j,i]     = v_s[j,i-1] + yd_s[j,i] - cons_s[j,i]
-     # Consumption function
+     # Wealth accumulation in Country N - eq. 6.O.11
+     v_n[j,i]     = v_n[j,i-1] + (yd_n[j,i] - cons_n[j,i])
+     # Wealth accumulation in Country S - eq. 6.O.12
+     v_s[j,i]     = v_s[j,i-1] + (yd_s[j,i] - cons_s[j,i])
+     # Consumption function in Country N - eq. 6.O.13
+     cons_n[j,i]  = alpha1_n * yd_n[j,i] + alpha2_n * v_n[j,i-1]
+     # Consumption function in Country S - eq. 6.O.14
      cons_s[j,i]  = alpha1_s[j,i] * yd_s[j,i] + alpha2_s * v_s[j,i-1]
-     # Cash held by the households
+     # Cash money held in Country N - eq. 6.O.15
+     h_h_n[j,i]   = v_n[j,i] - b_h_n[j,i]
+     # Cash money held in Country S - eq. 6.O.16
      h_h_s[j,i]   = v_s[j,i] - b_h_s[j,i]
-     # Demand for bills
+     # Demand for government bills in Country N - eq. 6.O.17
+     b_h_n[j,i]   = v_n[j,i] * (lambda0_n + lambda1_n * r_n[j,i] - lambda2_n * (yd_n[j,i] / v_n[j,i]))
+     # Demand for government bills in Country S - eq. 6.O.18
      b_h_s[j,i]   = v_s[j,i] * (lambda0_s + lambda1_s * r_s[j,i] - lambda2_s * (yd_s[j,i] / v_s[j,i]))
-     # Supply of bills (government budget constraint, central bank profits go to the government)
-     b_s_s[j,i]   = b_s_s[j,i-1] + g_s + r_s[j,i-1] * b_s_s[j,i-1] - t_s[j,i] - r_s[j,i-1] * b_cb_s[j,i-1]
-     # Bills held by the central bank
+     # Supply of government bills in Country N - eq. 6.O.19
+     b_s_n[j,i]   = b_s_n[j,i-1] + (g_n + r_n[j,i-1] * b_s_n[j,i-1]) - (t_n[j,i] + r_n[j,i-1] * b_cb_n[j,i-1])
+     # Supply of government bills in Country S - eq. 6.O.20
+     b_s_s[j,i]   = b_s_s[j,i-1] + (g_s + r_s[j,i-1] * b_s_s[j,i-1]) - (t_s[j,i] + r_s[j,i-1] * b_cb_s[j,i-1])
+     # Bills held by Central bank in Country N - eq. 6.O.21
+     b_cb_n[j,i]  = b_s_n[j,i] - b_h_n[j,i]
+     # Bills held by Central bank in Country S - eq. 6.O.22
      b_cb_s[j,i]  = b_s_s[j,i] - b_h_s[j,i]
-     # Supply of cash (bills and gold held by the central bank)
-     h_s_s[j,i]   = h_s_s[j,i-1] + b_cb_s[j,i] - b_cb_s[j,i-1] + p_g_s[j,i] * (or_s[j,i] - or_s[j,i-1])
-     # Gold reserves (trade balance settled in gold)
-     or_s[j,i]    = or_s[j,i-1] + (x_s[j,i] - im_s[j,i]) / p_g_s[j,i]
-     # Price of gold in the currency of S
+     # Gold holding by Central bank in Country N - eq. 6.O.23
+     or_n[j,i]    = or_n[j,i-1] + (h_s_n[j,i] - h_s_n[j,i-1] - (b_cb_n[j,i] - b_cb_n[j,i-1])) / p_g_n[j,i]
+     # Gold holding by Central bank in Country S - eq. 6.O.24
+     or_s[j,i]    = or_s[j,i-1] + (h_s_s[j,i] - h_s_s[j,i-1] - (b_cb_s[j,i] - b_cb_s[j,i-1])) / p_g_s[j,i]
+     # Supply of cash in Country N - eq. 6.O.25
+     h_s_n[j,i]   = h_h_n[j,i]
+     # Supply of cash in Country S - eq. 6.O.26
+     h_s_s[j,i]   = h_h_s[j,i]
+     # Price of gold in Country N - eq. 6.O.27
+     p_g_n[j,i]   = p_g_bar
+     # Price of gold in Country S - eq. 6.O.28
      p_g_s[j,i]   = p_g_n[j,i] * xr[j,i]
-     # Interest rate set by the central bank
-     r_s[j,i]     = r_bar_s
-
-     # Exchange rate (fixed)
+     # Exchange rate - eq. 6.O.29
      xr[j,i]      = xr_bar
+     # Interest rate in Country N - eq. 6.O.30
+     r_n[j,i]     = r_bar_n
+     # Interest rate in Country S - eq. 6.O.31
+     r_s[j,i]     = r_bar_s
 
      # Variables used in the figures (S Country)
      dv_s[j,i]    = v_s[j,i] - v_s[j,i-1]
      tb_s[j,i]    = x_s[j,i] - im_s[j,i]
-     gb_s[j,i]    = t_s[j,i] - g_s - r_s[j,i-1] * b_h_s[j,i-1]
+     gb_s[j,i]    = t_s[j,i] - (g_s + r_s[j,i] * b_h_s[j,i-1])
      d_bcb_s[j,i] = b_cb_s[j,i] - b_cb_s[j,i-1]
-     d_hs_s[j,i]  = h_s_s[j,i] - h_s_s[j,i-1]
+     d_hs_s[j,i]  = h_h_s[j,i] - h_h_s[j,i-1]
      d_or_s[j,i]  = p_g_s[j,i] * (or_s[j,i] - or_s[j,i-1])
-     check_n[j,i] = h_h_n[j,i] - h_s_n[j,i]
-     check_s[j,i] = h_h_s[j,i] - h_s_s[j,i]
+     check_n[j,i] = p_g_n[j,i] * (or_n[j,i] - or_n[j,i-1]) - (x_n[j,i] - im_n[j,i])
+     check_s[j,i] = p_g_s[j,i] * (or_s[j,i] - or_s[j,i-1]) - (x_s[j,i] - im_s[j,i])
 
    }
  }
@@ -231,8 +248,8 @@ for (j in 1:nScenarios){
 #FIGURES
 #Figure 6.8 (years 1945 to 2010: i= 1 to 66)
 x=c("1945":"2010")
-plot(y_n[2,2:66],xaxt='n',type="l",col="4",lwd=2,lty=1,font.main=1,cex.main=0.75,main="Figure 6.8: Evolution of GDP in the N and S Country following an increase in the import propensity of the S Country",ylab = '',xlab = '',ylim=range(y_n[2,1:66],y_s[2,1:66]))
-lines(y_s[2,2:66],type="l",lwd=2,lty=2,col="2")
+plot(y_n[2,1:66],xaxt='n',type="l",col="4",lwd=2,lty=1,font.main=1,cex.main=0.75,main="Figure 6.8: Evolution of GDP in the N and S Country following an increase in the import propensity of the S Country",ylab = '',xlab = '',ylim=range(y_n[2,1:66],y_s[2,1:66]))
+lines(y_s[2,1:66],type="l",lwd=2,lty=2,col="2")
 legend("right",c("North Country GDP","South Country GDP"),  bty = 1, cex = 0.8, lty=c(1,2), lwd=c(2,2), col = c(4,2), box.lwd=0)
 axis(side=1,at=seq(1,66,by=5),labels=x[seq(1,66,by=5)],tck=-0.02)
 
